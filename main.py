@@ -36,9 +36,11 @@ def review_code(data: CodeInput):
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
+    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://ai-code-reviewer-2-pufo.onrender.com",
+    "X-Title": "AI Code Reviewer"
+}
             json={
                 "model": "openai/gpt-3.5-turbo",
                 "messages": [
