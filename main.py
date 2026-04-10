@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Home route (VERY IMPORTANT)
+# ✅ Home route
 @app.get("/")
 def home():
     return {"message": "Backend running 🚀"}
@@ -29,25 +29,9 @@ class CodeInput(BaseModel):
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# ✅ Review route
+# ✅ DEBUG REVIEW ROUTE
 @app.post("/review")
 def review_code(data: CodeInput):
-    code = data.code
-
-    prompt = f"""
-You are an expert code reviewer.
-
-Analyze the following code and give:
-1. Mistakes
-2. Improvements
-3. Security issues
-4. Performance suggestions
-5. Final score out of 10
-
-Code:
-{code}
-"""
-
     try:
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
@@ -58,20 +42,20 @@ Code:
             json={
                 "model": "openai/gpt-3.5-turbo",
                 "messages": [
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": data.code}
                 ]
             }
         )
 
-        result = response.json()
-        return {"full_response": result}
-
-        return {"review": review}
+        return {
+            "status_code": response.status_code,
+            "response": response.text
+        }
 
     except Exception as e:
-        return {"review": f"❌ Error: {str(e)}"}
+        return {"error": str(e)}
 
-
+# ✅ Test API key
 @app.get("/test-key")
 def test_key():
     return {"key": str(OPENROUTER_API_KEY)}
