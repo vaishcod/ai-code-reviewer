@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Code Reviewer PRO</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI';
+      background: linear-gradient(135deg,#141e30,#243b55);
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .container {
+      width: 80%;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    textarea {
+      width: 90%;
+      height: 150px;
+      border-radius: 10px;
+      background: #000;
+      color: #00ffcc;
+      padding: 10px;
+      font-family: monospace;
+    }
+
+    select {
+      padding: 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin: 8px;
+      padding: 10px 18px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      background: #00ffcc;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card {
+      background: #111;
+      margin: 10px;
+      padding: 15px;
+      border-radius: 15px;
+      width: 250px;
+      text-align: left;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<h1>🚀 AI Code Reviewer PRO</h1>
+
+<div class="container">
+
+  <!-- 🔽 Language -->
+  <select id="language">
+    <option>Python</option>
+    <option>JavaScript</option>
+    <option>Java</option>
+  </select>
+
+  <br>
+
+  <textarea id="code" placeholder="Paste your code..."></textarea>
+
+  <br>
+
+  <button onclick="review()">Analyze</button>
+  <button onclick="copyOutput()">Copy</button>
+  <button onclick="download()">Download</button>
+  <button onclick="refreshPage()">Refresh</button>
+
+  <div id="output"></div>
+
+</div>
+
+<script>
+async function review() {
+  const code = document.getElementById("code").value;
+  const lang = document.getElementById("language").value;
+
+  if (!code) {
+    alert("Paste code!");
+    return;
+  }
+
+  document.getElementById("output").innerHTML = "🤖 Analyzing...";
+
+  try {
+    const res = await fetch("https://ai-code-reviewer-q7ae.onrender.com/review", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({code: code + " (" + lang + ")"})
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById("output").innerHTML =
+        `<p class="error">${data.error}</p>`;
+      return;
+    }
+
+    let html = `<div class="cards">`;
+
+    html += `<div class="card"><h3>⭐ Score</h3><p>${data.score}/10</p></div>`;
+    html += `<div class="card"><h3>📊 Complexity</h3><p>${data.complexity_score}</p></div>`;
+    html += `<div class="card"><h3>📖 Readability</h3><p>${data.readability_score}</p></div>`;
+
+    html += `<div class="card"><h3>🧠 Functions</h3><ul>${
+      data.functions.length ? data.functions.map(f => `<li>${f}</li>`).join("") : "<li>None</li>"
+    }</ul></div>`;
+
+    html += `<div class="card"><h3>⚠️ Issues</h3><ul>${
+      data.issues.length ? data.issues.map(i => `<li>${i}</li>`).join("") : "<li>No issues</li>"
+    }</ul></div>`;
+
+    html += `<div class="card"><h3>💡 Suggestions</h3><ul>${
+      data.suggestions.map(s => `<li>${s}</li>`).join("")
+    }</ul></div>`;
+
+    html += `</div>`;
+
+    document.getElementById("output").innerHTML = html;
+
+  } catch (err) {
+    document.getElementById("output").innerHTML =
+      `<p class="error">❌ Server down / backend error</p>`;
+    console.error(err);
+  }
+}
+
+function copyOutput() {
+  const text = document.getElementById("output").innerText;
+  navigator.clipboard.writeText(text);
+  alert("Copied!");
+}
+
+function download() {
+  const text = document.getElementById("output").innerText;
+  const blob = new Blob([text], {type:"text/plain"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "review.txt";
+  a.click();
+}
+
+function refreshPage() {
+  location.reload();
+}
+</script>
+
+</body>
+</html>
