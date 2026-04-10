@@ -36,11 +36,11 @@ def review_code(data: CodeInput):
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={
-    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-    "Content-Type": "application/json",
-    "HTTP-Referer": "https://ai-code-reviewer-2-pufo.onrender.com",
-    "X-Title": "AI Code Reviewer"
-}
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://ai-code-reviewer-2-pufo.onrender.com",
+                "X-Title": "AI Code Reviewer"
+            },
             json={
                 "model": "openai/gpt-3.5-turbo",
                 "messages": [
@@ -49,14 +49,17 @@ def review_code(data: CodeInput):
             }
         )
 
-        return {
-            "status_code": response.status_code,
-            "response": response.text
-        }
+        result = response.json()
+
+        # ✅ SAFE CHECK
+        if "choices" in result:
+            review = result["choices"][0]["message"]["content"]
+            return {"review": review}
+        else:
+            return {"error": result}
 
     except Exception as e:
         return {"error": str(e)}
-
 # ✅ Test API key
 @app.get("/test-key")
 def test_key():
