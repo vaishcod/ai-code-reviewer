@@ -9,6 +9,7 @@ load_dotenv()
 
 app = FastAPI()
 
+# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,11 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ✅ Home route (VERY IMPORTANT)
+@app.get("/")
+def home():
+    return {"message": "Backend running 🚀"}
+
+# ✅ Input model
 class CodeInput(BaseModel):
     code: str
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
+# ✅ Review route
 @app.post("/review")
 def review_code(data: CodeInput):
     code = data.code
