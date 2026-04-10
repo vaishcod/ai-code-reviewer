@@ -44,13 +44,11 @@ def review_code(data: CodeInput):
                 "X-Title": "AI Code Reviewer"
             },
             json={
-                "model": "openai/gpt-3.5-turbo",
-                "messages": [
-                    {"role": "user", "content": data.code}
-                ]
-            }
-        )
-
+    "model": "mistralai/mistral-7b-instruct:free",
+    "messages": [
+        {"role": "user", "content": data.code}
+    ]
+}
         print("STATUS:", response.status_code)
         print("RAW RESPONSE:", response.text)
 
