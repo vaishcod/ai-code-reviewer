@@ -32,6 +32,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 def startup():
     print("Backend started 🚀")
     print("API Key loaded:", OPENROUTER_API_KEY is not None)
+
 @app.post("/review")
 def review_code(data: CodeInput):
     try:
@@ -44,11 +45,13 @@ def review_code(data: CodeInput):
                 "X-Title": "AI Code Reviewer"
             },
             json={
-    "model": "mistralai/mistral-7b-instruct:free",
-    "messages": [
-        {"role": "user", "content": data.code}
-    ]
-}
+                "model": "mistralai/mistral-7b-instruct:free",
+                "messages": [
+                    {"role": "user", "content": data.code}
+                ]
+            }
+        )
+
         print("STATUS:", response.status_code)
         print("RAW RESPONSE:", response.text)
 
