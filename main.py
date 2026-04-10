@@ -29,7 +29,6 @@ class CodeInput(BaseModel):
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 print("API KEY:", OPENROUTER_API_KEY)
 
-
 @app.post("/review")
 def review_code(data: CodeInput):
     try:
@@ -49,17 +48,15 @@ def review_code(data: CodeInput):
             }
         )
 
-        result = response.json()
+        print("STATUS:", response.status_code)
+        print("RAW RESPONSE:", response.text)
 
-        # ✅ SAFE CHECK
-        if "choices" in result:
-            review = result["choices"][0]["message"]["content"]
-            return {"review": review}
-        else:
-            return {"error": result}
+        return response.json()
 
     except Exception as e:
+        print("EXCEPTION:", str(e))
         return {"error": str(e)}
+
 # ✅ Test API key
 @app.get("/test-key")
 def test_key():
