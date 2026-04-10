@@ -27,8 +27,11 @@ def home():
 class CodeInput(BaseModel):
     code: str
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-print("API KEY:", OPENROUTER_API_KEY)
 
+@app.on_event("startup")
+def startup():
+    print("Backend started 🚀")
+    print("API Key loaded:", OPENROUTER_API_KEY is not None)
 @app.post("/review")
 def review_code(data: CodeInput):
     try:
