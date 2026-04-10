@@ -64,10 +64,8 @@ Code:
         )
 
         result = response.json()
-        review = result["choices"][0]["message"]["content"]
 
-        return {"review": review}
-
+return {"full_response": result}
     except Exception as e:
         return {"review": f"❌ Error: {str(e)}"}
 
