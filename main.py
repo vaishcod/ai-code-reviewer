@@ -26,8 +26,9 @@ def home():
 # ✅ Input model
 class CodeInput(BaseModel):
     code: str
-
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+print("API KEY:", OPENROUTER_API_KEY)
+
 
 @app.post("/review")
 def review_code(data: CodeInput):
