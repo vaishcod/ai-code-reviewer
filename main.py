@@ -64,8 +64,10 @@ Code:
         )
 
         result = response.json()
+        return {"full_response": result}
 
-return {"full_response": result}
+        return {"review": review}
+
     except Exception as e:
         return {"review": f"❌ Error: {str(e)}"}
 
