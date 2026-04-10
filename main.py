@@ -70,3 +70,8 @@ Code:
 
     except Exception as e:
         return {"review": f"❌ Error: {str(e)}"}
+
+
+@app.get("/test-key")
+def test_key():
+    return {"key": str(OPENROUTER_API_KEY)}
