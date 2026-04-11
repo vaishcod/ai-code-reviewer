@@ -1,185 +1,132 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AI Code Reviewer PRO</title>
+<title>AI Code Reviewer PRO+</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI';
-      background: linear-gradient(135deg,#141e30,#243b55);
-      color: white;
-      text-align: center;
-    }
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color: white;
+  text-align: center;
+}
 
-    h1 {
-      margin-top: 20px;
-    }
+.container {
+  width: 90%;
+  margin: auto;
+}
 
-    .container {
-      width: 80%;
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-    }
+textarea {
+  width: 90%;
+  height: 180px;
+  background: black;
+  color: #00ffcc;
+  border-radius: 10px;
+}
 
-    textarea {
-      width: 90%;
-      height: 150px;
-      border-radius: 10px;
-      background: #000;
-      color: #00ffcc;
-      padding: 10px;
-      font-family: monospace;
-    }
+button {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+}
 
-    select {
-      padding: 8px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
+.card {
+  background: #111;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
 
-    button {
-      margin: 8px;
-      padding: 10px 18px;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      background: #00ffcc;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      transform: scale(1.1);
-    }
-
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .card {
-      background: #111;
-      margin: 10px;
-      padding: 15px;
-      border-radius: 15px;
-      width: 250px;
-      text-align: left;
-    }
-
-    .error {
-      color: red;
-      font-weight: bold;
-    }
-
-  </style>
+pre {
+  background: black;
+  padding: 10px;
+  color: #00ffcc;
+}
+</style>
 </head>
 
 <body>
 
-<h1>🚀 AI Code Reviewer PRO</h1>
+<h1>🚀 AI Code Reviewer PRO+</h1>
 
 <div class="container">
 
-  <!-- 🔽 Language -->
-  <select id="language">
-    <option>Python</option>
-    <option>JavaScript</option>
-    <option>Java</option>
-  </select>
+<textarea id="code" placeholder="Paste code here..."></textarea>
 
-  <br>
+<br>
 
-  <textarea id="code" placeholder="Paste your code..."></textarea>
+<button onclick="review()">Analyze</button>
+<button onclick="fixCode()">Fix Code</button>
+<button onclick="copy()">Copy</button>
+<button onclick="download()">Download</button>
 
-  <br>
-
-  <button onclick="review()">Analyze</button>
-  <button onclick="copyOutput()">Copy</button>
-  <button onclick="download()">Download</button>
-  <button onclick="refreshPage()">Refresh</button>
-
-  <div id="output"></div>
+<div id="output"></div>
 
 </div>
 
 <script>
+
+let lastData = null;
+
 async function review() {
   const code = document.getElementById("code").value;
-  const lang = document.getElementById("language").value;
 
-  if (!code) {
-    alert("Paste code!");
+  document.getElementById("output").innerHTML = "Analyzing...";
+
+  const res = await fetch("https://ai-code-reviewer-2-pufo.onrender.com/review", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({code})
+  });
+
+  const data = await res.json();
+  lastData = data;
+
+  if (data.error) {
+    document.getElementById("output").innerHTML = JSON.stringify(data.error);
     return;
   }
 
-  document.getElementById("output").innerHTML = "🤖 Analyzing...";
+  let html = "";
 
-  try {
-    const res = await fetch("https://ai-code-reviewer-q7ae.onrender.com/review", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({code: code + " (" + lang + ")"})
-    });
+  html += `<div class="card"><h3>⭐ Score</h3>${data.score}/10</div>`;
 
-    const data = await res.json();
+  html += `<div class="card"><h3>⚠️ Issues</h3>${
+    data.issues.map(i => `<p>${i}</p>`).join("")
+  }</div>`;
 
-    if (data.error) {
-      document.getElementById("output").innerHTML =
-        `<p class="error">${data.error}</p>`;
-      return;
-    }
+  html += `<div class="card"><h3>💡 Suggestions</h3>${
+    data.suggestions.map(s => `<p>${s}</p>`).join("")
+  }</div>`;
 
-    let html = `<div class="cards">`;
-
-    html += `<div class="card"><h3>⭐ Score</h3><p>${data.score}/10</p></div>`;
-    html += `<div class="card"><h3>📊 Complexity</h3><p>${data.complexity_score}</p></div>`;
-    html += `<div class="card"><h3>📖 Readability</h3><p>${data.readability_score}</p></div>`;
-
-    html += `<div class="card"><h3>🧠 Functions</h3><ul>${
-      data.functions.length ? data.functions.map(f => `<li>${f}</li>`).join("") : "<li>None</li>"
-    }</ul></div>`;
-
-    html += `<div class="card"><h3>⚠️ Issues</h3><ul>${
-      data.issues.length ? data.issues.map(i => `<li>${i}</li>`).join("") : "<li>No issues</li>"
-    }</ul></div>`;
-
-    html += `<div class="card"><h3>💡 Suggestions</h3><ul>${
-      data.suggestions.map(s => `<li>${s}</li>`).join("")
-    }</ul></div>`;
-
-    html += `</div>`;
-
-    document.getElementById("output").innerHTML = html;
-
-  } catch (err) {
-    document.getElementById("output").innerHTML =
-      `<p class="error">❌ Server down / backend error</p>`;
-    console.error(err);
-  }
+  document.getElementById("output").innerHTML = html;
 }
 
-function copyOutput() {
-  const text = document.getElementById("output").innerText;
-  navigator.clipboard.writeText(text);
+function fixCode() {
+  if (!lastData) return alert("Run Analyze first");
+
+  document.getElementById("output").innerHTML += `
+    <div class="card">
+      <h3>✅ Corrected Code</h3>
+      <pre>${lastData.corrected_code}</pre>
+    </div>
+  `;
+}
+
+function copy() {
+  navigator.clipboard.writeText(document.getElementById("output").innerText);
   alert("Copied!");
 }
 
 function download() {
-  const text = document.getElementById("output").innerText;
-  const blob = new Blob([text], {type:"text/plain"});
+  const blob = new Blob([document.getElementById("output").innerText]);
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "review.txt";
   a.click();
 }
 
-function refreshPage() {
-  location.reload();
-}
 </script>
 
 </body>

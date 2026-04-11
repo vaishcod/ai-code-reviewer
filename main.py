@@ -3,13 +3,14 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
 
-# CORS
+# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,19 +19,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Home
+# ✅ Home
 @app.get("/")
 def home():
-    return {"message": "Backend running 🚀"}
+    return {"message": "AI Code Reviewer PRO Running 🚀"}
 
-# Input model
+# ✅ Input
 class CodeInput(BaseModel):
     code: str
 
-# API key
+# ✅ API KEY
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# ✅ REVIEW FUNCTION (SEPARATE)
+# ✅ MAIN REVIEW API
 @app.post("/review")
 def review_code(data: CodeInput):
     try:
@@ -45,7 +46,21 @@ def review_code(data: CodeInput):
                 "messages": [
                     {
                         "role": "user",
-                        "content": f"Review this code:\n\n{data.code}"
+                        "content": f"""
+You are a senior software engineer.
+
+Analyze the code and return ONLY JSON:
+
+{{
+ "score": number (0-10),
+ "issues": ["list of issues"],
+ "suggestions": ["improvements"],
+ "corrected_code": "fixed version"
+}}
+
+Code:
+{data.code}
+"""
                     }
                 ]
             }
@@ -54,21 +69,16 @@ def review_code(data: CodeInput):
         result = response.json()
 
         if "choices" in result:
-            return {
-                "review": result["choices"][0]["message"]["content"]
-            }
+            ai_text = result["choices"][0]["message"]["content"]
+
+            try:
+                parsed = json.loads(ai_text)
+                return parsed
+            except:
+                return {"raw": ai_text}
+
         else:
-            return {
-                "error": result
-            }
+            return {"error": result}
 
     except Exception as e:
         return {"error": str(e)}
-
-# ✅ MODELS FUNCTION (ALAG)
-@app.get("/models")
-def get_models():
-    return requests.get(
-        "https://api.groq.com/openai/v1/models",
-        headers={"Authorization": f"Bearer {GROQ_API_KEY}"}
-    ).json()
