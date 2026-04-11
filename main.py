@@ -55,16 +55,5 @@ def review_code(data: CodeInput):
         )
 
         result = response.json()
-
-        # safe response handling
-        if "choices" in result:
-            return {
-                "review": result["choices"][0]["message"]["content"]
-            }
-        else:
-            return {
-                "error": result
-            }
-
-    except Exception as e:
-        return {"error": str(e)}  
+        return result
+       
