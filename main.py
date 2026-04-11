@@ -26,42 +26,45 @@ def home():
 # ✅ Input model
 class CodeInput(BaseModel):
     code: str
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-@app.on_event("startup")
-def startup():
-    print("Backend started 🚀")
-    print("API Key loaded:", OPENROUTER_API_KEY is not None)
+# ✅ ENV KEY
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+if not GROQ_API_KEY:
+    print("⚠️ GROQ_API_KEY missing!")
+
+# ✅ Review endpoint
 @app.post("/review")
 def review_code(data: CodeInput):
     try:
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            "https://api.groq.com/openai/v1/chat/completions",
             headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://ai-code-reviewer-2-pufo.onrender.com",
-                "X-Title": "AI Code Reviewer"
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json"
             },
             json={
-                "model": "mistralai/mistral-7b-instruct:free",
+                "model": "llama3-8b-8192",
                 "messages": [
-                    {"role": "user", "content": data.code}
+                    {
+                        "role": "user",
+                        "content": f"Review this code and suggest improvements:\n\n{data.code}"
+                    }
                 ]
             }
         )
 
-        print("STATUS:", response.status_code)
-        print("RAW RESPONSE:", response.text)
+        result = response.json()
 
-        return response.json()
+        # safe response handling
+        if "choices" in result:
+            return {
+                "review": result["choices"][0]["message"]["content"]
+            }
+        else:
+            return {
+                "error": result
+            }
 
     except Exception as e:
-        print("EXCEPTION:", str(e))
-        return {"error": str(e)}
-
-# ✅ Test API key
-@app.get("/test-key")
-def test_key():
-    return {"key": str(OPENROUTER_API_KEY)}
+        return {"error": str(e)} YEH PURA PROPER HAI 
