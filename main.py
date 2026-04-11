@@ -1,3 +1,38 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+import requests
+import os
+from dotenv import load_dotenv
+
+# Load env
+load_dotenv()
+
+# App init (IMPORTANT: top pe hi hona chahiye)
+app = FastAPI()
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Home route
+@app.get("/")
+def home():
+    return {"message": "Backend running 🚀"}
+
+# Input model
+class CodeInput(BaseModel):
+    code: str
+
+# API key
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+# Review endpoint
 @app.post("/review")
 def review_code(data: CodeInput):
     try:
@@ -12,7 +47,7 @@ def review_code(data: CodeInput):
                 "messages": [
                     {
                         "role": "user",
-                        "content": f"Review this code:\n\n{data.code}"
+                        "content": f"Review this code and suggest improvements:\n\n{data.code}"
                     }
                 ]
             }
@@ -20,6 +55,7 @@ def review_code(data: CodeInput):
 
         result = response.json()
 
+        # safe handling
         if "choices" in result:
             return {
                 "review": result["choices"][0]["message"]["content"]
