@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 import requests
@@ -22,7 +23,7 @@ app.add_middleware(
 # ✅ Home
 @app.get("/")
 def home():
-    return {"message": "AI Code Reviewer PRO Running 🚀"}
+    return FileResponse("index.html")
 
 # ✅ Input
 class CodeInput(BaseModel):
