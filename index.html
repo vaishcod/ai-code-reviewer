@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Code Reviewer PRO+</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color: white;
+  text-align: center;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+}
+
+textarea {
+  width: 90%;
+  height: 180px;
+  background: black;
+  color: #00ffcc;
+  border-radius: 10px;
+}
+
+button {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.card {
+  background: #111;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+pre {
+  background: black;
+  padding: 10px;
+  color: #00ffcc;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🚀 AI Code Reviewer PRO+</h1>
+
+<div class="container">
+
+<textarea id="code" placeholder="Paste code here..."></textarea>
+
+<br>
+
+<button onclick="review()">Analyze</button>
+<button onclick="fixCode()">Fix Code</button>
+<button onclick="copy()">Copy</button>
+<button onclick="download()">Download</button>
+
+<div id="output"></div>
+
+</div>
+
+<script>
+
+let lastData = null;
+
+async function review() {
+  const code = document.getElementById("code").value;
+
+  document.getElementById("output").innerHTML = "Analyzing...";
+
+  const res = await fetch("https://ai-code-reviewer-2-pufo.onrender.com/review", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({code})
+  });
+
+  const data = await res.json();
+  lastData = data;
+
+  if (data.error) {
+    document.getElementById("output").innerHTML = JSON.stringify(data.error);
+    return;
+  }
+
+  let html = "";
+
+  html += `<div class="card"><h3>⭐ Score</h3>${data.score}/10</div>`;
+
+  html += `<div class="card"><h3>⚠️ Issues</h3>${
+    data.issues.map(i => `<p>${i}</p>`).join("")
+  }</div>`;
+
+  html += `<div class="card"><h3>💡 Suggestions</h3>${
+    data.suggestions.map(s => `<p>${s}</p>`).join("")
+  }</div>`;
+
+  document.getElementById("output").innerHTML = html;
+}
+
+function fixCode() {
+  if (!lastData) return alert("Run Analyze first");
+
+  document.getElementById("output").innerHTML += `
+    <div class="card">
+      <h3>✅ Corrected Code</h3>
+      <pre>${lastData.corrected_code}</pre>
+    </div>
+  `;
+}
+
+function copy() {
+  navigator.clipboard.writeText(document.getElementById("output").innerText);
+  alert("Copied!");
+}
+
+function download() {
+  const blob = new Blob([document.getElementById("output").innerText]);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "review.txt";
+  a.click();
+}
+
+</script>
+
+</body>
+</html>
